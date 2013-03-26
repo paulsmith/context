@@ -23,7 +23,7 @@ var (
 func Set(r *http.Request, key, val interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	if data[r] == nil {
+	if _, ok := data[r]; !ok {
 		data[r] = p.alloc()
 		datat[r] = time.Now().Unix()
 	}
@@ -34,8 +34,8 @@ func Set(r *http.Request, key, val interface{}) {
 func Get(r *http.Request, key interface{}) interface{} {
 	mutex.Lock()
 	defer mutex.Unlock()
-	if data[r] != nil {
-		return data[r][key]
+	if m, ok := data[r]; ok {
+		return m[key]
 	}
 	return nil
 }
@@ -44,8 +44,8 @@ func Get(r *http.Request, key interface{}) interface{} {
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	if data[r] != nil {
-		delete(data[r], key)
+	if m, ok := data[r]; ok {
+		delete(m, key)
 	}
 }
 
