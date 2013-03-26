@@ -16,6 +16,7 @@ var (
 	mutex sync.Mutex
 	data  = make(map[*http.Request]ctxt)
 	datat = make(map[*http.Request]int64)
+	p     = newPool()
 )
 
 // Set stores a value for a given key in a given request.
@@ -23,7 +24,7 @@ func Set(r *http.Request, key, val interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if data[r] == nil {
-		data[r] = make(ctxt)
+		data[r] = p.alloc()
 		datat[r] = time.Now().Unix()
 	}
 	data[r][key] = val
@@ -60,6 +61,7 @@ func Clear(r *http.Request) {
 
 // clear is Clear without the lock.
 func clear(r *http.Request) {
+	p.free(data[r])
 	delete(data, r)
 	delete(datat, r)
 }
