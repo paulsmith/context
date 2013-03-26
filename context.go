@@ -10,9 +10,11 @@ import (
 	"time"
 )
 
+type ctxt map[interface{}]interface{}
+
 var (
 	mutex sync.Mutex
-	data  = make(map[*http.Request]map[interface{}]interface{})
+	data  = make(map[*http.Request]ctxt)
 	datat = make(map[*http.Request]int64)
 )
 
@@ -21,7 +23,7 @@ func Set(r *http.Request, key, val interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if data[r] == nil {
-		data[r] = make(map[interface{}]interface{})
+		data[r] = make(ctxt)
 		datat[r] = time.Now().Unix()
 	}
 	data[r][key] = val
@@ -77,7 +79,7 @@ func Purge(maxAge int) int {
 	count := 0
 	if maxAge <= 0 {
 		count = len(data)
-		data = make(map[*http.Request]map[interface{}]interface{})
+		data = make(map[*http.Request]ctxt)
 		datat = make(map[*http.Request]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
